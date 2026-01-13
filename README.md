@@ -1,20 +1,72 @@
-to run all containers :
-docker compose --profile ui up -d
 
-to check the logs :
+# SmartEventAI – Docker Setup
+
+## Run all containers
+Run all containers (backend + UI) in detached mode:
+
+```bash
+docker compose --profile ui up -d
+```
+
+---
+
+## Check logs
+Check logs for a specific container:
+
+```bash
 docker logs -f smartevent_gateway
 docker logs -f smartevent_front
+```
 
+(You can replace the container name with any service, e.g. `smartevent_auth`, `smartevent_event`, `smartevent_ai`, etc.)
 
-Eureka : http://localhost:8761
-➡️ Tu dois voir des instances enregistrées (gateway, auth, event, ai, workflow…)
+---
 
-Config server (test) : http://localhost:8888/application/default
-➡️ Doit renvoyer du JSON de config
+##  Services & URLs
 
-Gateway health : http://localhost:8080/actuator/health
-➡️ Doit être UP
+###  Service Discovery
+**Eureka**
+- URL: http://localhost:8761  
+- Expected: You should see registered instances such as  
+  `gateway`, `auth`, `event`, `ai`, `workflow`, ...
 
-Front : http://localhost:4200
-Admin : http://localhost:4201
-AI docs : http://localhost:8000/docs
+---
+
+### Configuration
+**Config Server (test)**
+- URL: http://localhost:8888/application/default  
+- Expected: A JSON configuration response
+
+---
+
+### API Gateway
+**Gateway health**
+- URL: http://localhost:8080/actuator/health  
+- Expected status: `UP`
+
+---
+
+### Frontends
+- **User Front**: http://localhost:4200  
+- **Admin Front**: http://localhost:4201  
+
+---
+
+### AI Service
+**Swagger / API Docs**
+- URL: http://localhost:8000/docs  
+
+---
+
+## Stop containers
+Stop all containers:
+
+```bash
+docker compose down
+```
+
+---
+
+## Notes
+- Containers keep running in background when started with `-d`.
+- Logs are always accessible using `docker logs -f <container_name>`.
