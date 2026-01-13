@@ -1,0 +1,8 @@
+**/node_modules
+**/dist
+**/target
+**/.idea
+**/.git
+**/.DS_Store
+smartevent_admin_app
+smartevent_user_app
