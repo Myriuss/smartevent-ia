@@ -20,6 +20,7 @@ jobs:
           host_pkey: ""
           script: |
             cd /home/azureuser/smartevent-ia
-            git pull
+            git pull origin dev
             docker compose pull
             docker compose up -d --remove-orphans
+            docker ps
