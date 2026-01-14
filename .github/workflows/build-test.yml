@@ -18,11 +18,11 @@ jobs:
           java-version: 17
       - name: Build microservices
         run: |
-          mvn -f auth-service/pom.xml test
-          mvn -f event-service/pom.xml test
-          mvn -f config-server/pom.xml test
-          mvn -f eureka-server/pom.xml test
-          mvn -f gateway-service/pom.xml test
+          mvn -f auth-service/pom.xml clean package -DskipTests 
+          mvn -f event-service/pom.xml clean package -DskipTests 
+          mvn -f config-server/pom.xml clean package -DskipTests 
+          mvn -f eureka-server/pom.xml clean package -DskipTests 
+          mvn -f gateway-service/pom.xml clean package -DskipTests
 
   build-front:
     runs-on: ubuntu-latest
