@@ -16,10 +16,9 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
-          # optionnel mais recommandé
-          host_pkey: ""
           script: |
             cd /home/azureuser/smartevent-ia
+            git checkout dev
             git pull origin dev
             docker compose pull
             docker compose up -d --remove-orphans
