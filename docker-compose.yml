@@ -17,18 +17,26 @@ services:
       retries: 20
 
   eureka-server:
-    build: ./eureka-server
+    build:
+      context: .
+      dockerfile: eureka-server/Dockerfile
     container_name: smartevent_eureka
     ports:
       - "8761:8761"
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8761/actuator/health | grep -q UP"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:8761/actuator/health | grep -q UP",
+        ]
       interval: 10s
       timeout: 5s
       retries: 30
 
   config-server:
-    build: ./config-server
+    build:
+      context: .
+      dockerfile: config-server/Dockerfile
     container_name: smartevent_config
     ports:
       - "8888:8888"
@@ -41,13 +49,19 @@ services:
       eureka-server:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8888/actuator/health | grep -q UP || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:8888/actuator/health | grep -q UP || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 30
 
   auth-service:
-    build: ./auth-service
+    build:
+      context: .
+      dockerfile: auth-service/Dockerfile
     container_name: smartevent_auth
     ports:
       - "8091:8091"
@@ -63,13 +77,19 @@ services:
       eureka-server:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8091/actuator/health | grep -q UP || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:8091/actuator/health | grep -q UP || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 30
 
   event-service:
-    build: ./event-service
+    build:
+      context: .
+      dockerfile: event-service/Dockerfile
     container_name: smartevent_event
     ports:
       - "8090:8090"
@@ -85,7 +105,11 @@ services:
       eureka-server:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8090/actuator/health | grep -q UP || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:8090/actuator/health | grep -q UP || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 30
@@ -105,7 +129,11 @@ services:
       eureka-server:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/docs >/dev/null || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:8000/docs >/dev/null || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 30
@@ -128,13 +156,19 @@ services:
       gateway-service:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:3000/workflow/health | grep -q UP || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:3000/workflow/health | grep -q UP || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 30
 
   gateway-service:
-    build: ./gateway-service
+    build:
+      context: .
+      dockerfile: gateway-service/Dockerfile
     container_name: smartevent_gateway
     ports:
       - "8080:8080"
@@ -153,7 +187,11 @@ services:
       ai-service:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health | grep -q UP || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:8080/actuator/health | grep -q UP || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 30
@@ -189,6 +227,39 @@ services:
       gateway-service:
         condition: service_healthy
 
+    # ---------- SONARQUBE + DB DÉDIÉE ----------
+
+  sonarqube-db:
+    image: postgres:15
+    container_name: sonarqube_db
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+      POSTGRES_DB: sonarqube
+    volumes:
+      - sonarqube_pgdata:/var/lib/postgresql/data
+
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube
+    depends_on:
+      - sonarqube-db
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://sonarqube-db:5432/sonarqube
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: sonar
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+
 volumes:
   postgres_data:
   ollama_data:
+  sonarqube_pgdata:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:

@@ -1,21 +1,22 @@
 # syntax=docker/dockerfile:1
 
 FROM maven:3.9.6-eclipse-temurin-17 AS build
-WORKDIR /app
+WORKDIR /app/event-service
 
-# Copy wrapper + pom first for better caching
-COPY mvnw pom.xml ./
-COPY .mvn .mvn
+# Copier le module
+COPY event-service/mvnw ./mvnw
+COPY event-service/pom.xml ./pom.xml
+COPY event-service/.mvn ./.mvn
 RUN chmod +x mvnw
 
-# Pre-fetch deps
-RUN ./mvnw -q -DskipTests dependency:go-offline
+# Pré-charger les dépendances
+RUN ./mvnw dependency:go-offline -B -q
 
-# Copy sources
-COPY src src
+# Copier les sources
+COPY event-service/src ./src
 
-# Build
-RUN ./mvnw -q -DskipTests package
+# Build du module uniquement
+RUN ./mvnw package -DskipTests -B -q
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app
@@ -25,7 +26,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy jar
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/event-service/target/*.jar app.jar
 
 # Actuator defaults
 ENV JAVA_OPTS="-XX:MaxRAMPercentage=75.0"
