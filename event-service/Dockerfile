@@ -31,6 +31,6 @@ COPY --from=build /app/event-service/target/*.jar app.jar
 # Actuator defaults
 ENV JAVA_OPTS="-XX:MaxRAMPercentage=75.0"
 
-EXPOSE 8080
+EXPOSE 8090
 
 ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar app.jar"]
