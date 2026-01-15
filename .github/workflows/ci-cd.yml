@@ -1,13 +1,15 @@
-name: Build & Test
+name: CI-CD
 
 on:
   push:
     branches: [dev]
-  workflow_dispatch: {}
   pull_request:
     branches: [dev]
+  workflow_dispatch: {}
 
 jobs:
+  # 1) BUILD & TEST
+
   build-maven:
     runs-on: ubuntu-latest
     steps:
@@ -18,10 +20,10 @@ jobs:
           java-version: 17
       - name: Build microservices
         run: |
-          mvn -f auth-service/pom.xml clean package -DskipTests 
-          mvn -f event-service/pom.xml clean package -DskipTests 
-          mvn -f config-server/pom.xml clean package -DskipTests 
-          mvn -f eureka-server/pom.xml clean package -DskipTests 
+          mvn -f auth-service/pom.xml clean package -DskipTests
+          mvn -f event-service/pom.xml clean package -DskipTests
+          mvn -f config-server/pom.xml clean package -DskipTests
+          mvn -f eureka-server/pom.xml clean package -DskipTests
           mvn -f gateway-service/pom.xml clean package -DskipTests
 
   build-front:
@@ -135,3 +137,54 @@ jobs:
         run: |
           pip install -r requirements.txt
           pytest || echo "tests simples"
+
+  # 2) DOCKER BUILD & PUSH
+  docker-build-push:
+    runs-on: ubuntu-latest
+    # attend que TOUT le build & test soit terminé
+    needs:
+      - test-front
+      - test-front-admin
+      - test-workflow
+      - test-ai
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build images
+        run: docker compose -f docker-compose.yml build
+
+      - name: Push images
+        run: docker compose -f docker-compose.yml push
+
+  # 3) DEPLOY
+  deploy:
+    runs-on: ubuntu-latest
+    # ne part que si les images sont build & push
+    needs: docker-build-push
+
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd /home/azureuser/smartevent-ia
+            git checkout dev
+            git pull origin dev
+            docker compose pull
+            docker compose up -d --remove-orphans
+            docker ps
