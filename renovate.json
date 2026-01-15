@@ -1,0 +1,24 @@
+{
+  "extends": ["config:base"],
+
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "📦 Renovate – Dépendances SmartEvent AI",
+
+  "prCreation": "immediate",
+  "automerge": false,
+
+  "labels": ["dependencies", "renovate"],
+
+  "timezone": "Europe/Paris",
+
+  "prHourlyLimit": 2,
+  "prConcurrentLimit": 5,
+
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["major"],
+      "labels": ["major-update"],
+      "automerge": false
+    }
+  ]
+}
