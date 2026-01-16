@@ -21,11 +21,11 @@
 
     <properties>
         <java.version>17</java.version>
-        <!-- 🔹 IMPORTANT : Spring Cloud 2025 pour Spring Boot 3.5 -->
+        <!--  IMPORTANT : Spring Cloud 2025 pour Spring Boot 3.5 -->
         <spring-cloud.version>2025.0.0</spring-cloud.version>
     </properties>
 
-    <!-- 🔹 BOM Spring Cloud 2025 -->
+    <!--  BOM Spring Cloud 2025 -->
     <dependencyManagement>
         <dependencies>
             <dependency>
