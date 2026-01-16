@@ -1,36 +1,39 @@
-# syntax=docker/dockerfile:1
+# Use Maven image for building
+FROM maven:3.9-eclipse-temurin-17 AS build
 
-FROM maven:3.9.6-eclipse-temurin-17 AS build
-WORKDIR /app/auth-service
-
-# Copier le module
-COPY auth-service/mvnw ./mvnw
-COPY auth-service/pom.xml ./pom.xml
-COPY auth-service/.mvn ./.mvn
-RUN chmod +x mvnw
-
-# Pré-charger les dépendances
-RUN ./mvnw dependency:go-offline -B -q
-
-# Copier les sources
-COPY auth-service/src ./src
-
-# Build du module uniquement
-RUN ./mvnw package -DskipTests -B -q
-
-FROM eclipse-temurin:17-jre
+# Set the working directory
 WORKDIR /app
 
-# curl pour les healthchecks Docker
-RUN apt-get update && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/*
+# Copy pom.xml and download dependencies
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
 
-# Copy jar
-COPY --from=build /app/auth-service/target/*.jar app.jar
+# Copy source code
+COPY src ./src
 
-# Actuator defaults
-ENV JAVA_OPTS="-XX:MaxRAMPercentage=75.0"
+# Build the application
+RUN mvn clean package -DskipTests -B
 
+# Use JRE for runtime
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+
+# Create a non-root user
+RUN addgroup --system appgroup && adduser --system --disabled-password appuser --ingroup appgroup
+
+# Copy the built jar from build stage
+COPY --from=build /app/target/*.jar app.jar
+
+# Change ownership to the non-root user
+RUN chown appuser:appgroup app.jar
+
+# Switch to non-root user
+USER appuser
+
+# Expose the port the app runs on
 EXPOSE 8091
 
-ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar app.jar"]
+# Run the jar file
+CMD ["java", "-jar", "app.jar"]
+ 
