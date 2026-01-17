@@ -1,6 +1,6 @@
 const express = require('express');
 const axios = require('axios');
-const {Eureka} = require('eureka-js-client');
+const { Eureka } = require('eureka-js-client');
 const app = express();
 app.use(express.json());
 
@@ -11,13 +11,13 @@ const EVENT_SERVICE_BASE_URL = `${GATEWAY_BASE_URL}/events`;
 const AI_SERVICE_URL = `${GATEWAY_BASE_URL}/ai/generate-event-content`;
 
 app.post('/workflow/start/:eventId', async (req, res) => {
-    const eventId  = req.params.eventId;
-    
-    try{
+    const eventId = req.params.eventId;
+
+    try {
         // Récupérer l'evenement
         const eventResponse = await axios.get
-        (`${EVENT_SERVICE_BASE_URL}/getEvenementById/${eventId}`);
-    
+            (`${EVENT_SERVICE_BASE_URL}/getEvenementById/${eventId}`);
+
         const event = eventResponse.data;
         console.log("Evenement récupéré:", event);
 
@@ -44,7 +44,7 @@ app.post('/workflow/start/:eventId', async (req, res) => {
         };
 
         const updateResponse = await axios.put
-        (`${EVENT_SERVICE_BASE_URL}/updateEvenement`, updatedEvent);
+            (`${EVENT_SERVICE_BASE_URL}/updateEvenement`, updatedEvent);
 
         console.log("Evenement mis à jour:", updateResponse.data);
 
@@ -61,10 +61,10 @@ app.post('/workflow/start/:eventId', async (req, res) => {
 });
 
 app.get('/workflow/status/:eventId', async (req, res) => {
-    const eventId  = req.params.eventId;
+    const eventId = req.params.eventId;
     try {
         const eventResponse = await axios.get
-        (`${EVENT_SERVICE_BASE_URL}/getEvenementById/${eventId}`);
+            (`${EVENT_SERVICE_BASE_URL}/getEvenementById/${eventId}`);
         const event = eventResponse.data;
         return res.status(200).json({
             eventId,
@@ -88,7 +88,7 @@ const eureka = new Eureka({
         instanceId: `workflow-service:${PORT}`,
         hostName: INSTANCE_HOSTNAME,
         ipAddr: INSTANCE_IP,
-        statusPageUrl : `http://${INSTANCE_HOSTNAME}:${PORT}/workflow/health`,
+        statusPageUrl: `http://${INSTANCE_HOSTNAME}:${PORT}/workflow/health`,
         port: {
             '$': PORT,
             '@enabled': 'true',
@@ -112,8 +112,8 @@ app.get('/workflow/health', (req, res) => {
 });
 
 eureka.start(err => {
-    if(err){
-        console.error('Erreur lors de l\'enregistrement à Eureka : ', err);
+    if (err) {
+        console.error('Eureka indisponible, service lancé quand même');
     } else {
         console.log('Enregistré avec succès auprès de Eureka');
     }
