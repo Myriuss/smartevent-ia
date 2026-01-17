@@ -119,7 +119,7 @@ services:
     build: ./ai-service
     container_name: smartevent_ai
     ports:
-      - "8000:8000"
+      - "8001:8000"
     environment:
       EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
       INSTANCE_HOST: ai-service
@@ -228,7 +228,7 @@ services:
       gateway-service:
         condition: service_healthy
 
-    # ---------- SONARQUBE + DB DÉDIÉE ----------
+    # ----------- SONARQUBE + DB DÉDIÉE -----------
 
   sonarqube-db:
     image: postgres:15
