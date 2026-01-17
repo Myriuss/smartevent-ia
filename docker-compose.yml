@@ -17,6 +17,7 @@ services:
       retries: 20
 
   eureka-server:
+    image: ghcr.io/myriuss/smartevent-ia-eureka:latest
     build:
       context: .
       dockerfile: eureka-server/Dockerfile
@@ -34,6 +35,7 @@ services:
       retries: 30
 
   config-server:
+    image: ghcr.io/myriuss/smartevent-ia-config:latest
     build:
       context: .
       dockerfile: config-server/Dockerfile
@@ -59,6 +61,7 @@ services:
       retries: 30
 
   auth-service:
+    image: ghcr.io/myriuss/smartevent-ia-auth:latest
     build:
       context: .
       dockerfile: auth-service/Dockerfile
@@ -87,6 +90,7 @@ services:
       retries: 30
 
   event-service:
+    image: ghcr.io/myriuss/smartevent-ia-event:latest
     build:
       context: .
       dockerfile: event-service/Dockerfile
@@ -114,58 +118,8 @@ services:
       timeout: 5s
       retries: 30
 
-  ai-service:
-    build: ./ai-service
-    container_name: smartevent_ai
-    ports:
-      - "8000:8000"
-    environment:
-      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
-      INSTANCE_HOST: ai-service
-      INSTANCE_PORT: 8000
-      OLLAMA_URL: http://ollama:11434/api/generate
-      OLLAMA_MODEL: mistral
-    depends_on:
-      eureka-server:
-        condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl -fsS http://localhost:8000/docs >/dev/null || exit 1",
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 30
-
-  workflow-service:
-    build: ./workflow-service
-    container_name: smartevent_workflow
-    ports:
-      - "3000:3000"
-    environment:
-      PORT: 3000
-      GATEWAY_BASE_URL: http://gateway-service:8080
-      EUREKA_HOST: eureka-server
-      EUREKA_PORT: 8761
-      INSTANCE_HOSTNAME: workflow-service
-      INSTANCE_IP: workflow-service
-    depends_on:
-      eureka-server:
-        condition: service_healthy
-      gateway-service:
-        condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl -fsS http://localhost:3000/workflow/health | grep -q UP || exit 1",
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 30
-
   gateway-service:
+    image: ghcr.io/myriuss/smartevent-ia-gateway:latest
     build:
       context: .
       dockerfile: gateway-service/Dockerfile
@@ -196,6 +150,59 @@ services:
       timeout: 5s
       retries: 30
 
+  ai-service:
+    image: ghcr.io/myriuss/smartevent-ia-ai:latest
+    build: ./ai-service
+    container_name: smartevent_ai
+    ports:
+      - "8000:8000"
+    environment:
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      INSTANCE_HOST: ai-service
+      INSTANCE_PORT: 8000
+      OLLAMA_URL: http://ollama:11434/api/generate
+      OLLAMA_MODEL: mistral
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:8000/docs >/dev/null || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  workflow-service:
+    image: ghcr.io/myriuss/smartevent-ia-workflow:latest
+    build: ./workflow-service
+    container_name: smartevent_workflow
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      GATEWAY_BASE_URL: http://gateway-service:8080
+      EUREKA_HOST: eureka-server
+      EUREKA_PORT: 8761
+      INSTANCE_HOSTNAME: workflow-service
+      INSTANCE_IP: workflow-service
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      gateway-service:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:3000/workflow/health | grep -q UP || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
   # LLM local (optionnel). Active avec: docker compose --profile llm up
   ollama:
     image: ollama/ollama:latest
@@ -208,6 +215,7 @@ services:
 
   # UI (optionnel). Active avec: docker compose --profile ui up
   front:
+    image: ghcr.io/myriuss/smartevent-ia-front:latest
     build: ./front
     profiles: ["ui"]
     container_name: smartevent_front
@@ -218,6 +226,7 @@ services:
         condition: service_healthy
 
   frontadmin:
+    image: ghcr.io/myriuss/smartevent-ia-frontadmin:latest
     build: ./frontAdmin
     profiles: ["ui"]
     container_name: smartevent_front_admin
