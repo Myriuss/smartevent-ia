@@ -152,8 +152,9 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          mvn verify sonar:sonar \
-            -Dsonar.host.url=http://sonarqube:9000 \
+          mvn -f auth-service/pom.xml -B verify -DskipTests \
+           org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar \
+            -Dsonar.host.url=${SONAR_HOST_URL} \
             -Dsonar.token=${SONAR_TOKEN} \
             -Dsonar.projectKey=smartevent-ia-auth \
             -Dsonar.projectName="smartevent-ia-auth"
@@ -163,8 +164,9 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          mvn verify sonar:sonar \
-            -Dsonar.host.url=http://sonarqube:9000 \
+          mvn -f event-service/pom.xml -B verify -DskipTests \
+           org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar \
+            -Dsonar.host.url=${SONAR_HOST_URL} \
             -Dsonar.token=${SONAR_TOKEN} \
             -Dsonar.projectKey=smartevent-ia-event \
             -Dsonar.projectName="smartevent-ia-event"
@@ -174,8 +176,9 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          mvn verify sonar:sonar \
-            -Dsonar.host.url=http://sonarqube:9000 \
+          mvn -f config-server/pom.xml -B verify -DskipTests \
+           org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar \
+            -Dsonar.host.url=${SONAR_HOST_URL} \
             -Dsonar.token=${SONAR_TOKEN} \
             -Dsonar.projectKey=smartevent-ia-config \
             -Dsonar.projectName="smartevent-ia-config"
@@ -185,8 +188,9 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          mvn verify sonar:sonar \
-            -Dsonar.host.url=http://sonarqube:9000 \
+          mvn -f eureka-server/pom.xml -B verify -DskipTests \
+           org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar \
+            -Dsonar.host.url=${SONAR_HOST_URL} \
             -Dsonar.token=${SONAR_TOKEN} \
             -Dsonar.projectKey=smartevent-ia-eureka \
             -Dsonar.projectName="smartevent-ia-eureka"
@@ -196,8 +200,9 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
-          mvn verify sonar:sonar \
-            -Dsonar.host.url=http://sonarqube:9000 \
+          mvn -f gateway-service/pom.xml -B verify -DskipTests \
+           org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar \
+            -Dsonar.host.url=${SONAR_HOST_URL} \
             -Dsonar.token=${SONAR_TOKEN} \
             -Dsonar.projectKey=smartevent-ia-gateway \
             -Dsonar.projectName="smartevent-ia-gateway"
@@ -281,7 +286,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.CR_PAT }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build images
         run: docker compose -f docker-compose.yml build
@@ -304,6 +309,6 @@ jobs:
             cd /home/azureuser/smartevent-ia
             git checkout dev
             git pull origin dev
-            docker compose build
-            docker compose --profile ui up -d --force-recreate
+            docker compose pull
+            docker compose --profile ui up -d --remove-orphans
             docker ps
