@@ -309,7 +309,6 @@ jobs:
             cd /home/azureuser/smartevent-ia
             git checkout dev
             git pull origin dev
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker compose pull
-            docker compose --profile ui up -d --remove-orphans
+            docker compose build
+            docker compose --profile ui up -d --force-recreate
             docker ps
